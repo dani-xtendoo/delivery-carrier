@@ -7,16 +7,14 @@ from lxml import etree
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    delivery_zone_id = fields.Many2one(
-        comodel_name='partner.delivery.zone',
-        string='Delivery Zone',
-        ondelete='restrict',
-        index=True,
+    delivery_zone_ids = fields.One2many(
+        string='Delivery Zones',
+        comodel_name='delivery.zone.partner.line',
+        inverse_name='partner_id',
     )
 
     @api.model
-    def fields_view_get(self, view_id=None, view_type='form', toolbar=False,
-                        submenu=False):
+    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
         """The purpose of this is to write a context on "child_ids" field
          respecting other contexts on this field.
          There is a PR (https://github.com/odoo/odoo/pull/26607) to odoo for
@@ -33,7 +31,7 @@ class ResPartner(models.Model):
             if partner_fields:
                 partner_field = partner_fields[0]
                 context = partner_field.attrib.get("context", "{}").replace(
-                    "{", "{'default_delivery_zone_id': delivery_zone_id, ", 1,
+                    "{", "{'default_delivery_zone_ids': delivery_zone_ids, ", 1,
                 )
                 partner_field.attrib['context'] = context
                 res['arch'] = etree.tostring(partner_xml)
