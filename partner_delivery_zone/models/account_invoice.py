@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, exceptions, fields, models, _
+from odoo.http import request
 
 
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
     def _get_partner_delivery_zone(self):
-        return int(self.env['ir.config_parameter'].sudo().get_param('selected.partner.delivery.zone', 0))
+        if 'partner_delivery_zone_id' in request.session:
+            return request.session['partner_delivery_zone_id']
+        return 0
 
     delivery_zone_id = fields.Many2one(
         comodel_name='partner.delivery.zone',

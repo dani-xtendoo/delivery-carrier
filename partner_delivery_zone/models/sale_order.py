@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models, _
+from odoo.http import request
 from odoo.exceptions import ValidationError
 
 import logging
@@ -9,6 +10,11 @@ import logging
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
+
+    def _get_partner_delivery_zone(self):
+        if 'partner_delivery_zone_id' in request.session:
+            return request.session['partner_delivery_zone_id']
+        return 0
 
     def _get_default_partner(self):
         zone_id = self._get_partner_delivery_zone()
@@ -20,9 +26,6 @@ class SaleOrder(models.Model):
         for partner_zone in partner_zones_ids:
             if partner_zone.partner_id not in visit_ids:
                 return partner_zone.partner_id
-
-    def _get_partner_delivery_zone(self):
-        return int(self.env['ir.config_parameter'].sudo().get_param('selected.partner.delivery.zone', 0))
 
     delivery_zone_id = fields.Many2one(
         comodel_name='partner.delivery.zone',
